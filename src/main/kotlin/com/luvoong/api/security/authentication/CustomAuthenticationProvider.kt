@@ -18,7 +18,7 @@ class CustomAuthenticationProvider(
 
         val user = userDetailsService.loadUserByUsername(authentication.principal.toString())
 
-        if (passwordEncoder.matches(authentication.credentials.toString(), user.password)) {
+        if (!passwordEncoder.matches(authentication.credentials.toString(), user.password)) {
             throw PasswordNotMatchesExceptionLuvoong()
         }
 
