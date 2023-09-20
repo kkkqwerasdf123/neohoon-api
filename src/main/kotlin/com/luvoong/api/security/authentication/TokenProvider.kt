@@ -30,8 +30,9 @@ class TokenProvider(
 
 ) {
 
-    private val AUTHORITIES_KEY = "auth"
-    private val ID_KEY = "id"
+    private val AUTHORITIES_NAME = "auth"
+    private val ID_NAME = "id"
+    private val REFRESH_KEY_NAME = "lvrk"
     private val key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))
     private val tokenValidityInMilliSeconds: Long = tokenValidityInSeconds * 1000
 
@@ -44,8 +45,9 @@ class TokenProvider(
 
         return Jwts.builder()
             .setSubject(user.username)
-            .claim(ID_KEY, user.id)
-            .claim(AUTHORITIES_KEY, user.authorities.map { it.authority }.joinToString(","))
+            .claim(ID_NAME, user.id)
+            .claim(AUTHORITIES_NAME, user.authorities.map { it.authority }.joinToString(","))
+            .claim(REFRESH_KEY_NAME, user.key)
             .setIssuedAt(now)
             .setExpiration(Date(now.time + tokenValidityInMilliSeconds))
             .signWith(key, SignatureAlgorithm.HS512)
@@ -62,7 +64,7 @@ class TokenProvider(
         val authorities = extractAuthorityFromClaims(claims)
 
         val principal = UserInfo(
-            id = claims.get(ID_KEY, Integer::class.java).toLong(),
+            id = claims.get(ID_NAME, Integer::class.java).toLong(),
             email = claims.subject,
             password = null,
             authorities = authorities
@@ -88,14 +90,14 @@ class TokenProvider(
     fun getUserOfExpiredToken(jwt: String): UserInfo {
         return try {
             val claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(jwt).body
-            UserInfo(claims.get(ID_KEY, Integer::class.java).toLong(), claims.subject, null, extractAuthorityFromClaims(claims))
+            UserInfo(claims.get(ID_NAME, Integer::class.java).toLong(), claims.subject, null, extractAuthorityFromClaims(claims), claims.get(REFRESH_KEY_NAME, String::class.java))
         } catch (e: ExpiredJwtException) {
-            UserInfo(e.claims.get(ID_KEY, Integer::class.java).toLong(), e.claims.subject, null, extractAuthorityFromClaims(e.claims))
+            UserInfo(e.claims.get(ID_NAME, Integer::class.java).toLong(), e.claims.subject, null, extractAuthorityFromClaims(e.claims), e.claims.get(REFRESH_KEY_NAME, String::class.java))
         }
     }
 
     fun extractAuthorityFromClaims(claims: Claims): MutableCollection<out GrantedAuthority> {
-        return claims.get(AUTHORITIES_KEY).toString().split(",")
+        return claims.get(AUTHORITIES_NAME).toString().split(",")
             .filter { StringUtils.hasText(it) }
             .map { SimpleGrantedAuthority(it) }
             .toMutableList()

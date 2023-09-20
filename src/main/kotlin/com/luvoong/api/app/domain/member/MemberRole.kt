@@ -24,7 +24,7 @@ class MemberRole(
     var member: Member = member
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     var role: Role = role
 
 }

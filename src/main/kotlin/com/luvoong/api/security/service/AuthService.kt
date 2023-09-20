@@ -4,11 +4,11 @@ import com.luvoong.api.app.domain.member.MemberToken
 import com.luvoong.api.app.exception.security.MemberNotFoundExceptionLuvoong
 import com.luvoong.api.app.repository.member.MemberRepository
 import com.luvoong.api.security.authentication.CustomAuthenticationProvider
-import com.luvoong.api.security.repository.MemberTokenRepository
 import com.luvoong.api.security.authentication.TokenProvider
 import com.luvoong.api.security.dto.TokenDto
+import com.luvoong.api.security.repository.MemberTokenRepository
 import com.luvoong.api.security.userdetails.UserInfo
-import org.springframework.security.authentication.AuthenticationProvider
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -24,6 +24,8 @@ class AuthService(
     private val tokenProvider: TokenProvider
 ) {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     @Transactional
     fun authenticateAndGetToken(username: String, password: String): TokenDto {
 
@@ -38,13 +40,16 @@ class AuthService(
 
         setAuthenticationToSecurityContext(authentication)
 
-        return TokenDto(tokenProvider.createToken(authentication.principal as UserInfo), generateRefreshToken(username))
+        val user = authentication.principal as UserInfo
+
+        return TokenDto(tokenProvider.createToken(user), generateRefreshToken(username, user.key))
     }
 
     @Transactional
-    fun generateRefreshToken(username: String): String {
-        val memberToken = MemberToken(username)
+    fun generateRefreshToken(username: String, key: String): String {
+        val memberToken = MemberToken(username, key)
         memberTokenRepository.save(memberToken)
+        log.debug("refreshToken generated")
         return memberToken.token
     }
 
@@ -52,12 +57,18 @@ class AuthService(
     fun refreshToken(token: String, jwt: String): Optional<TokenDto> {
         val user = tokenProvider.getUserOfExpiredToken(jwt)
         return memberTokenRepository.findById(token)
-            .filter { user.username == it.username }
+            .map {
+                log.info("user: {}, it : {}", user.key, it.key)
+                it
+            }
+            .filter {user.username == it.username && user.key == it.key
+            }
             .map {
                 val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
                 memberTokenRepository.delete(it)
                 setAuthenticationToSecurityContext(authentication)
-                Optional.of(TokenDto(tokenProvider.createToken(authentication.principal as UserInfo), generateRefreshToken(user.username)))
+                val freshUser = authentication.principal as UserInfo
+                Optional.of(TokenDto(tokenProvider.createToken(freshUser), generateRefreshToken(freshUser.username, freshUser.key)))
             }
             .orElse(Optional.empty())
     }

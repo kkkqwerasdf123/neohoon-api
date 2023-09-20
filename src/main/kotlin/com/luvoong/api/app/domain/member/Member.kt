@@ -25,10 +25,10 @@ class Member (
     @Column(name = "email", nullable = false, updatable = false, unique = true, length = 320)
     var email: String = email
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     var firstName: String = firstName
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     var lastName: String = lastName
 
     var password: String? = null

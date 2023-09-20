@@ -7,7 +7,8 @@ import java.util.*
 @RedisHash(value = "member_token", timeToLive = 14 * 86400)
 class MemberToken(
 
-    username: String
+    username: String,
+    key: String
 
 ) {
 
@@ -15,5 +16,7 @@ class MemberToken(
     var token: String = UUID.randomUUID().toString()
 
     var username: String = username
+
+    var key: String = key
 
 }
