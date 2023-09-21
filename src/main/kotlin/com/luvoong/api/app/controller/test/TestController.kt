@@ -64,7 +64,7 @@ class TestController (
     @GetMapping("/api/v1/ex-test")
     fun exTest() {
         if (1 == 1) {
-            throw LuvoongBaseException(HttpStatus.BAD_GATEWAY, "asdf")
+            throw LuvoongBaseException(HttpStatus.BAD_GATEWAY, "test.name")
         }
     }
 
