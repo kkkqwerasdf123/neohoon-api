@@ -8,6 +8,7 @@ import com.luvoong.api.security.authentication.TokenProvider
 import com.luvoong.api.security.dto.TokenDto
 import com.luvoong.api.security.repository.MemberTokenRepository
 import com.luvoong.api.security.userdetails.UserInfo
+import jakarta.servlet.http.Cookie
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -23,6 +24,13 @@ class AuthService(
     private val memberTokenRepository: MemberTokenRepository,
     private val tokenProvider: TokenProvider
 ) {
+
+    companion object {
+
+        const val AUTHORIZATION_HEADER_NAME = "Authorization"
+        const val REFRESH_TOKEN_COOKIE_NAME = "X-LUVOONG-REFRESH-TOKEN"
+
+    }
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -82,4 +90,10 @@ class AuthService(
         setAuthenticationToSecurityContext(tokenProvider.getAuthentication(jwt))
     }
 
+    fun getRefreshTokenCookie(refreshToken: String): Cookie {
+        val cookie = Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
+        cookie.isHttpOnly = true
+        cookie.path = "/"
+        return cookie
+    }
 }

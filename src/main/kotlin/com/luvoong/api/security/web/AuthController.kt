@@ -1,9 +1,7 @@
 package com.luvoong.api.security.web
 
 import com.luvoong.api.security.dto.LoginRequest
-import com.luvoong.api.security.filter.JwtFilter
 import com.luvoong.api.security.service.AuthService
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -22,10 +20,8 @@ class AuthController(
         val tokenDto = authService.authenticateAndGetToken(loginRequest.username, loginRequest.password)
 
         val headers = HttpHeaders()
-        headers.add(JwtFilter.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
-        val cookie = Cookie(JwtFilter.REFRESH_TOKEN_COOKIE_NAME, tokenDto.refreshToken)
-        cookie.isHttpOnly = true
-        response.addCookie(cookie)
+        headers.add(AuthService.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
+        response.addCookie(authService.getRefreshTokenCookie(tokenDto.refreshToken))
 
         return ResponseEntity(headers, HttpStatus.OK)
     }

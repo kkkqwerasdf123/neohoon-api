@@ -1,12 +1,9 @@
 package com.luvoong.api.security.filter
 
-import com.luvoong.api.config.aop.TraceId
 import com.luvoong.api.security.authentication.TokenProvider
-import com.luvoong.api.security.authentication.TokenValidateState.EXPIRED
-import com.luvoong.api.security.authentication.TokenValidateState.VALID
+import com.luvoong.api.security.authentication.TokenValidateState.*
 import com.luvoong.api.security.service.AuthService
 import jakarta.servlet.FilterChain
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -20,14 +17,6 @@ class JwtFilter(
     private val authService: AuthService,
 ): OncePerRequestFilter() {
 
-    companion object {
-
-        const val AUTHORIZATION_HEADER_NAME = "Authorization"
-        const val REFRESH_TOKEN_COOKIE_NAME = "X-LUVOONG-REFRESH-TOKEN"
-
-    }
-
-    private val transactionHolder = ThreadLocal<TraceId>()
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun doFilterInternal(
@@ -36,36 +25,37 @@ class JwtFilter(
         filterChain: FilterChain
     ) {
 
-        val jwt = resolveToken(request)
+        val accessToken = getAccessTokenOfRequestHeader(request)
 
-        if (StringUtils.hasText(jwt)) {
-            val state = tokenProvider.getValidState(jwt)
+        if (StringUtils.hasText(accessToken)) {
+            when (tokenProvider.accessTokenValidState(accessToken)) {
 
-            if (state == VALID) {
-                authService.setAuthenticationToSecurityContext(jwt)
-            } else if (state == EXPIRED) {
-                val refreshToken = getRefreshToken(request)
+                VALID -> authService.setAuthenticationToSecurityContext(accessToken)
 
-                log.debug("refreshToken exists in cookies: {}", refreshToken)
+                EXPIRED -> {
+                    val refreshToken = getRefreshTokenOfRequestCookie(request)
 
-                authService.refreshToken(refreshToken, jwt)
-                    .ifPresent {
-                        response.setHeader(AUTHORIZATION_HEADER_NAME, it.accessToken)
-                        val cookie = Cookie(REFRESH_TOKEN_COOKIE_NAME, it.refreshToken)
-                        cookie.isHttpOnly = true
-                        response.addCookie(cookie)
+                    log.debug("refreshToken exists in cookies: {}", refreshToken)
 
-                        log.debug("token refreshed")
-                    }
+                    authService.refreshToken(refreshToken, accessToken)
+                        .ifPresent {
+                            response.setHeader(AuthService.AUTHORIZATION_HEADER_NAME, it.accessToken)
+                            response.addCookie(authService.getRefreshTokenCookie(it.refreshToken))
+
+                            log.debug("token refreshed")
+                        }
+                }
+
+                INVALID -> {}
             }
         }
 
         filterChain.doFilter(request, response)
     }
 
-    private fun resolveToken(request: HttpServletRequest): String {
+    private fun getAccessTokenOfRequestHeader(request: HttpServletRequest): String {
 
-        val bearerToken = request.getHeader(AUTHORIZATION_HEADER_NAME)
+        val bearerToken = request.getHeader(AuthService.AUTHORIZATION_HEADER_NAME)
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7)
@@ -73,9 +63,9 @@ class JwtFilter(
         return ""
     }
 
-    private fun getRefreshToken(request: HttpServletRequest): String {
+    private fun getRefreshTokenOfRequestCookie(request: HttpServletRequest): String {
         return (request.cookies ?: arrayOf())
-            .filter { it.name == REFRESH_TOKEN_COOKIE_NAME }
+            .filter { it.name == AuthService.REFRESH_TOKEN_COOKIE_NAME }
             .map { it.value }
             .firstOrNull()
             ?: ""

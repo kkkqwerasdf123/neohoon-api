@@ -73,7 +73,7 @@ class TokenProvider(
         return UsernamePasswordAuthenticationToken(principal, token, authorities)
     }
 
-    fun getValidState(token: String): TokenValidateState {
+    fun accessTokenValidState(token: String): TokenValidateState {
         return try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
             log.debug("valid token")
