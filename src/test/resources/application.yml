@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: test
+  datasource:
+    url: jdbc:h2:mem:luvoongtest01
+    username: sa
+    password:
+
+
+test:
+  redis:
+    port: 6379
