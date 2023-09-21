@@ -82,7 +82,7 @@ class TokenProvider(
             log.debug("expired token : {}", e.message)
             EXPIRED
         } catch (e: Exception) {
-            log.debug("invalid token : ", e)
+            log.debug("invalid token : {}", token, e)
             INVALID
         }
     }

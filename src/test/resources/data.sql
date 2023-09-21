@@ -1,0 +1,3 @@
+insert into member (first_name, last_name, email, birthday, password, deleted) values ('DH', 'KIM', 'kkkqwerasdf123@naver.com', '1991-12-17', '$2a$12$obviXu1lKs6CnYZyCQPnqOEVGXA7hV435.e02BOzaw2Zd8rY6z.my', false)
+insert into member_role (member_id, role, deleted) values ((select max(member_id) from member), 'MASTER', false)
+insert into member_role (member_id, role, deleted) values ((select max(member_id) from member), 'USER', false)

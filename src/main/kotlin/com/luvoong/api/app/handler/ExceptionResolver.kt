@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus.*
 import org.springframework.http.ProblemDetail
 import org.springframework.web.ErrorResponseException
 import org.springframework.web.HttpRequestMethodNotSupportedException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.NoHandlerFoundException
@@ -30,6 +31,8 @@ class ExceptionResolver(
         is ErrorResponseException -> ex.body
         is NoHandlerFoundException -> getProblemDetail(NOT_FOUND)
         is HttpRequestMethodNotSupportedException -> getProblemDetail(METHOD_NOT_ALLOWED)
+
+        is MethodArgumentNotValidException -> getProblemDetail(BAD_REQUEST)
         else -> {
             log.error("unhandled error occurred : ", ex)
             getProblemDetail(INTERNAL_SERVER_ERROR)
