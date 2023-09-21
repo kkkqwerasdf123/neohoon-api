@@ -1,7 +1,7 @@
 package com.luvoong.api.security.userdetails
 
 import com.luvoong.api.app.domain.member.Member
-import com.luvoong.api.app.exception.security.MemberNotFoundExceptionLuvoong
+import com.luvoong.api.app.exception.security.MemberNotFoundException
 import com.luvoong.api.app.repository.member.MemberRepository
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -22,7 +22,7 @@ class CustomUserDetailsService(
 
         return memberRepository.findByEmailAndDeletedIsFalse(username)
             .map { createUserInfo(it) }
-            .orElseThrow { MemberNotFoundExceptionLuvoong() }
+            .orElseThrow { MemberNotFoundException() }
     }
 
     private fun createUserInfo(member: Member): UserInfo {

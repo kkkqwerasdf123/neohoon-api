@@ -35,7 +35,7 @@ class JwtFilter(
                 EXPIRED -> {
                     val refreshToken = getRefreshTokenOfRequestCookie(request)
 
-                    log.debug("refreshToken exists in cookies: {}", refreshToken)
+                    log.debug("refreshToken in cookie : {}", refreshToken)
 
                     authService.refreshToken(refreshToken, accessToken)
                         .ifPresent {

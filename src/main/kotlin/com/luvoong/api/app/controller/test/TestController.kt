@@ -35,7 +35,7 @@ class TestController (
     fun home() = "Hello"
 
     @Transactional
-    @PostMapping("/api/v1/test/member")
+    @PostMapping("/dev/v1/test/member")
     fun resetTestMember(): ResponseEntity<Void> {
         val member = Member("DongHyeok", "Kim", "kkkqwerasdf123@naver.com", LocalDate.of(1991, 12, 17))
         member.password = passwordEncoder.encode("1234")
@@ -48,7 +48,7 @@ class TestController (
     }
 
     @Transactional
-    @DeleteMapping("/api/v1/test/member")
+    @DeleteMapping("/dev/v1/test/member")
     fun deleteALlMembers(): ResponseEntity<Void> {
         testService.deleteAllMembers()
         return ResponseEntity.ok().build()

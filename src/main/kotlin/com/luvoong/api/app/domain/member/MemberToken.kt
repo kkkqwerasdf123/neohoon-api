@@ -1,10 +1,11 @@
 package com.luvoong.api.app.domain.member
 
+import com.luvoong.api.security.service.AuthService
 import org.springframework.data.annotation.Id
 import org.springframework.data.redis.core.RedisHash
 import java.util.*
 
-@RedisHash(value = "member_token", timeToLive = 14 * 86400)
+@RedisHash(value = "member_token", timeToLive = AuthService.REFRESH_TOKEN_TIME_TO_LIVE)
 class MemberToken(
 
     username: String,

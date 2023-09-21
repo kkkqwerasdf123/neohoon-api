@@ -1,7 +1,7 @@
 package com.luvoong.api.security.service
 
 import com.luvoong.api.app.domain.member.MemberToken
-import com.luvoong.api.app.exception.security.MemberNotFoundExceptionLuvoong
+import com.luvoong.api.app.exception.security.MemberNotFoundException
 import com.luvoong.api.app.repository.member.MemberRepository
 import com.luvoong.api.security.authentication.CustomAuthenticationProvider
 import com.luvoong.api.security.authentication.TokenProvider
@@ -28,7 +28,8 @@ class AuthService(
     companion object {
 
         const val AUTHORIZATION_HEADER_NAME = "Authorization"
-        const val REFRESH_TOKEN_COOKIE_NAME = "X-LUVOONG-REFRESH-TOKEN"
+        const val REFRESH_TOKEN_COOKIE_NAME = "lvrt"
+        const val REFRESH_TOKEN_TIME_TO_LIVE: Long = 14 * 86400
 
     }
 
@@ -41,7 +42,7 @@ class AuthService(
             UsernamePasswordAuthenticationToken(
                 memberRepository.findByEmailAndDeletedIsFalse(username)
                     .map { it.email }
-                    .orElseThrow { MemberNotFoundExceptionLuvoong() },
+                    .orElseThrow { MemberNotFoundException() },
                 password
             )
         )
@@ -65,20 +66,19 @@ class AuthService(
     fun refreshToken(token: String, jwt: String): Optional<TokenDto> {
         val user = tokenProvider.getUserOfExpiredToken(jwt)
         return memberTokenRepository.findById(token)
+            .filter {user.username == it.username && user.key == it.key }
             .map {
-                log.info("user: {}, it : {}", user.key, it.key)
-                it
+                try {
+                    val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
+                    memberTokenRepository.delete(it)
+                    setAuthenticationToSecurityContext(authentication)
+                    val freshUser = authentication.principal as UserInfo
+                    TokenDto(tokenProvider.createToken(freshUser), generateRefreshToken(freshUser.username, freshUser.key))
+                } catch (e: MemberNotFoundException) {
+                    log.debug("refresh token is valid but member not exists")
+                    null
+                }
             }
-            .filter {user.username == it.username && user.key == it.key
-            }
-            .map {
-                val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
-                memberTokenRepository.delete(it)
-                setAuthenticationToSecurityContext(authentication)
-                val freshUser = authentication.principal as UserInfo
-                Optional.of(TokenDto(tokenProvider.createToken(freshUser), generateRefreshToken(freshUser.username, freshUser.key)))
-            }
-            .orElse(Optional.empty())
     }
 
 
@@ -94,6 +94,7 @@ class AuthService(
         val cookie = Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
         cookie.isHttpOnly = true
         cookie.path = "/"
+        cookie.maxAge = REFRESH_TOKEN_TIME_TO_LIVE.toInt()
         return cookie
     }
 }

@@ -26,7 +26,7 @@ class SecurityConfig(
             headers { it.disable() }
             authorizeHttpRequests {
                 it.requestMatchers(*antMatchers("/api/v1/authenticate")).permitAll()
-                it.requestMatchers(*antMatchers("/api/v1/test/**")).permitAll()
+                it.requestMatchers(*antMatchers("/dev/v1/**")).permitAll()
                 it.requestMatchers(*antMatchers("/api/v1/**")).authenticated()
                 it.anyRequest().authenticated()
             }
