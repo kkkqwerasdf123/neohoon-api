@@ -15,5 +15,4 @@ class TestRedisConfig(
         return LettuceConnectionFactory(testRedisContainerConfig.host, testRedisContainerConfig.port)
     }
 
-
 }

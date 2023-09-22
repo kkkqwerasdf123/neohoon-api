@@ -16,7 +16,6 @@ class TestRedisContainerConfig {
     init {
         val REDIS_CONTAINER = GenericContainer(DockerImageName.parse(REDIS_DOCKER_IMAGE))
             .withExposedPorts(6379)
-            .withReuse(true)
 
         REDIS_CONTAINER.start()
 
