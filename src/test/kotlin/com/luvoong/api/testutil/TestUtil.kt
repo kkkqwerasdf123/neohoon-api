@@ -71,11 +71,11 @@ class TestUtil {
     }
 
     fun getAuthResponse(): ResponseEntity<Void> {
-        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}&rememberMe=true", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password)
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password)
     }
 
     fun getAccessToken(): String {
-        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}&rememberMe=true", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
     }
 
     fun get(url: String): MockHttpServletRequestBuilder {

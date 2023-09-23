@@ -3,6 +3,7 @@ package com.luvoong.api.config
 import com.luvoong.api.security.filter.JwtFilter
 import com.luvoong.api.security.handler.CustomAccessDeniedHandler
 import com.luvoong.api.security.handler.CustomAuthenticationEntryPoint
+import com.luvoong.api.security.service.AuthService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -56,8 +57,8 @@ class SecurityConfig(
         config.allowCredentials = true
         config.allowedOrigins = allowedOrigins.toMutableList()
         config.allowedMethods = mutableListOf(GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD).map { it.name() }
-        config.allowedHeaders = mutableListOf("*")
-        config.exposedHeaders = mutableListOf("*")
+        config.allowedHeaders = mutableListOf(AuthService.AUTHORIZATION_HEADER_NAME)
+        config.exposedHeaders = mutableListOf(AuthService.AUTHORIZATION_HEADER_NAME)
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
         return source

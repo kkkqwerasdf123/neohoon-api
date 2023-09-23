@@ -1,7 +1,6 @@
 package com.luvoong.api.security.web
 
 import com.luvoong.api.security.dto.LoginRequest
-import com.luvoong.api.security.dto.TokenResponse
 import com.luvoong.api.security.service.AuthService
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -19,18 +18,15 @@ class AuthController(
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @PostMapping("/api/v1/authenticate")
-    fun authenticate(loginRequest: LoginRequest, response: HttpServletResponse): ResponseEntity<TokenResponse> {
+    fun authenticate(loginRequest: LoginRequest, response: HttpServletResponse): ResponseEntity<Void> {
 
         val tokenDto = authService.authenticateAndGetToken(loginRequest.username, loginRequest.password)
 
         val headers = HttpHeaders()
         headers.add(AuthService.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
+        response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(tokenDto.refreshToken).toString())
 
-        if (loginRequest.rememberMe) {
-            response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(tokenDto.refreshToken).toString())
-        }
-
-        return ResponseEntity(TokenResponse(tokenDto.accessToken), headers, HttpStatus.OK)
+        return ResponseEntity(headers, HttpStatus.OK)
     }
 
 }

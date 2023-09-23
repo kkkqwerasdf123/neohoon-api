@@ -52,7 +52,7 @@ class AuthControllerTest {
     @Test
     fun authenticate_success() {
 
-        mvc.perform(post("/api/v1/authenticate").param("username", testUtil.username).param("password", testUtil.password).param("rememberMe", "true"))
+        mvc.perform(post("/api/v1/authenticate").param("username", testUtil.username).param("password", testUtil.password))
             .andExpect(status().isOk)
             .andExpect(header().exists(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().exists(AuthService.REFRESH_TOKEN_COOKIE_NAME))
