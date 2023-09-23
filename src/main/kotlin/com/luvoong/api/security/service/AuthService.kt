@@ -8,8 +8,8 @@ import com.luvoong.api.security.authentication.TokenProvider
 import com.luvoong.api.security.dto.TokenDto
 import com.luvoong.api.security.repository.MemberTokenRepository
 import com.luvoong.api.security.userdetails.UserInfo
-import jakarta.servlet.http.Cookie
 import org.slf4j.LoggerFactory
+import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -90,11 +90,14 @@ class AuthService(
         setAuthenticationToSecurityContext(tokenProvider.getAuthentication(jwt))
     }
 
-    fun getRefreshTokenCookie(refreshToken: String): Cookie {
-        val cookie = Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-        cookie.isHttpOnly = true
-        cookie.path = "/"
-        cookie.maxAge = REFRESH_TOKEN_TIME_TO_LIVE.toInt()
-        return cookie
+    fun getRefreshTokenCookie(refreshToken: String): ResponseCookie {
+        return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME)
+            .value(refreshToken)
+            .sameSite("None")
+            .httpOnly(true)
+            .path("/")
+            .maxAge(REFRESH_TOKEN_TIME_TO_LIVE)
+            .secure(true)
+            .build()
     }
 }

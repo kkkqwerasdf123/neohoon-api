@@ -7,8 +7,10 @@ import com.luvoong.api.app.repository.member.MemberRepository
 import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.service.AuthService
 import jakarta.servlet.http.Cookie
+import org.slf4j.LoggerFactory
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpMethod
+import org.springframework.http.RequestEntity
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
@@ -22,6 +24,8 @@ class TestUtil {
         var member: Member? = null
 
     }
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     val username = "kkkqwerasdf123@naver.com"
     val password = "1234"
@@ -41,7 +45,6 @@ class TestUtil {
         Role.values().map { MemberRole(member, it) }.forEach { memberRoleRepository.save(it) }
         TestUtil.member = member;
     }
-
 
     fun parseCookie(cookieString: String): Cookie {
         val rawCookieParams = cookieString.split(";")
@@ -68,11 +71,11 @@ class TestUtil {
     }
 
     fun getAuthResponse(): ResponseEntity<Void> {
-        return this.restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, null, Void::class.java, username, password)
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}&rememberMe=true", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password)
     }
 
     fun getAccessToken(): String {
-        return this.restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, null, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}&rememberMe=true", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
     }
 
     fun get(url: String): MockHttpServletRequestBuilder {

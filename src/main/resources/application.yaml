@@ -1,20 +1,39 @@
 spring:
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
   mvc:
     throw-exception-if-no-handler-found: true
   web:
     resources:
       add-mappings: false
 
-logging:
-  level:
-    com.luvoong.api: debug
-
 luvoong:
   auth:
     jwt:
       secret: QkVta0k4a2M5Y3lPMzhjRHN5YUxwdW1ZeHJCaG5jY0FmVlU0bGJ6THM4eElzM285MUs4R21lNWZVSmhYTFZla0NPczRrYW9YeFphYlIyRFgyZXlJcGxnR2lURm9Bb3J5NDVVRmg0TXZ6UFkzZ3Z2SWFJYlhia2VmNm1xMnNLTzQ=
       validity-in-seconds: 5
+  web:
+    cors:
+      allowed-origins: http://localhost:5173
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  http2:
+    enabled: true
+  ssl:
+    enabled: true
+    key-store: keystore.p12
+    key-store-password: 123456
+    key-store-type: PKCS12
+    key-alias: bns-ssl
+
+logging:
+  level:
+    com.luvoong.api: debug

@@ -40,7 +40,7 @@ class JwtFilter(
                     authService.refreshToken(refreshToken, accessToken)
                         .ifPresent {
                             response.setHeader(AuthService.AUTHORIZATION_HEADER_NAME, it.accessToken)
-                            response.addCookie(authService.getRefreshTokenCookie(it.refreshToken))
+                            response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(it.refreshToken).toString())
 
                             log.debug("token refreshed")
                         }

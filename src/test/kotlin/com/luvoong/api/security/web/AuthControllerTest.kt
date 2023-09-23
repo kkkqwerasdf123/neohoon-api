@@ -5,7 +5,6 @@ import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.service.AuthService
 import com.luvoong.api.testutil.TestUtil
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -53,7 +52,7 @@ class AuthControllerTest {
     @Test
     fun authenticate_success() {
 
-        mvc.perform(post("/api/v1/authenticate").param("username", testUtil.username).param("password", testUtil.password))
+        mvc.perform(post("/api/v1/authenticate").param("username", testUtil.username).param("password", testUtil.password).param("rememberMe", "true"))
             .andExpect(status().isOk)
             .andExpect(header().exists(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().exists(AuthService.REFRESH_TOKEN_COOKIE_NAME))
