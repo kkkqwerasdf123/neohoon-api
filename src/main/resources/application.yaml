@@ -8,11 +8,18 @@ spring:
 luvoong:
   auth:
     jwt:
-      secret: QkVta0k4a2M5Y3lPMzhjRHN5YUxwdW1ZeHJCaG5jY0FmVlU0bGJ6THM4eElzM285MUs4R21lNWZVSmhYTFZla0NPczRrYW9YeFphYlIyRFgyZXlJcGxnR2lURm9Bb3J5NDVVRmg0TXZ6UFkzZ3Z2SWFJYlhia2VmNm1xMnNLTzQ=
+      secret: ENC(ArAUcqhLbVg0X/5P1kWQKhXublIj/7d28I5LdGfH5Cj+O4zvs54WijFOngEu96cT4xM5r+tMd5Va7/i5F8X+siAjA+rnRO2lcgyU1ohL1We0DXCSDoM7OYYOSSngWe62ONC92ksAv7vKyvmHZuAASVvneQcHQaEjrVyd3Ozf7xfVF02V3vaOpaTh/KyIJuonuuTC4l+mBzEXxT7iceLHewVghZmtRqoaOxMhb7y3zONkVX5d6vCXOg==)
       validity-in-seconds: 5
   web:
     cors:
       allowed-origins: http://localhost:5173
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    key-obtention-iterations: 1000
+    pool-size: 1
+    string-output-type: base64
 
 ---
 spring:
