@@ -10,10 +10,9 @@ import java.time.LocalDate
 @EntityListeners(AuditingEntityListener::class)
 class Member (
 
-    firstName: String,
-    lastName: String,
+    name: String,
     email: String,
-    birthday: LocalDate
+    birthday: LocalDate? = null
 
 ) : BaseEntity() {
 
@@ -26,15 +25,11 @@ class Member (
     var email: String = email
 
     @Column(nullable = false, length = 30)
-    var firstName: String = firstName
-
-    @Column(nullable = false, length = 30)
-    var lastName: String = lastName
+    var name: String = name
 
     var password: String? = null
 
-    @Column(nullable = false)
-    var birthday: LocalDate = birthday
+    var birthday: LocalDate? = birthday
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")

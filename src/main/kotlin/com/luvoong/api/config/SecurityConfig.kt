@@ -3,6 +3,7 @@ package com.luvoong.api.config
 import com.luvoong.api.security.filter.JwtFilter
 import com.luvoong.api.security.handler.CustomAccessDeniedHandler
 import com.luvoong.api.security.handler.CustomAuthenticationEntryPoint
+import com.luvoong.api.security.handler.Oauth2SuccessHandler
 import com.luvoong.api.security.service.AuthService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -22,9 +23,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val authenticationEntryPoint: CustomAuthenticationEntryPoint,
     private val accessDeniedHandler: CustomAccessDeniedHandler,
+    private val oauth2SuccessHandler: Oauth2SuccessHandler,
     private val jwtFilter: JwtFilter,
 
-    @Value("\${luvoong.web.cors.allowed-origins}")
+    @Value("\${luvoong.server.cors.allowed-origins}")
     private val allowedOrigins: Array<String>
 ) {
 
@@ -35,6 +37,8 @@ class SecurityConfig(
             headers { it.disable() }
             cors { it.configurationSource(corsConfigurationSource()) }
             authorizeHttpRequests {
+                it.requestMatchers(*antMatchers("/login/oauth2/code/**")).permitAll()
+                it.requestMatchers(*antMatchers("/oauth2/authorization/**")).permitAll()
                 it.requestMatchers(*antMatchers("/api/v1/authenticate")).permitAll()
                 it.requestMatchers(*antMatchers("/dev/v1/**")).permitAll()
                 it.requestMatchers(*antMatchers("/api/v1/**")).authenticated()
@@ -44,6 +48,9 @@ class SecurityConfig(
             exceptionHandling {
                 it.accessDeniedHandler(accessDeniedHandler)
                 it.authenticationEntryPoint(authenticationEntryPoint)
+            }
+            oauth2Login {
+                it.successHandler(oauth2SuccessHandler)
             }
             addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
         }

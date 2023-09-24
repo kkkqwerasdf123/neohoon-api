@@ -39,7 +39,7 @@ class TestUtil {
         if (member != null) {
             return
         }
-        val member = Member("DH", "KIM", username, LocalDate.of(1991, 12, 17))
+        val member = Member("DHKIM", username, LocalDate.of(1991, 12, 17))
         member.password = passwordEncoder.encode(password)
         memberRepository.save(member)
         Role.values().map { MemberRole(member, it) }.forEach { memberRoleRepository.save(it) }

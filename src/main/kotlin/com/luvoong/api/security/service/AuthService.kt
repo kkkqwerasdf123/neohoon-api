@@ -3,16 +3,19 @@ package com.luvoong.api.security.service
 import com.luvoong.api.app.domain.member.MemberToken
 import com.luvoong.api.app.exception.security.MemberNotFoundException
 import com.luvoong.api.app.repository.member.MemberRepository
+import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.authentication.CustomAuthenticationProvider
 import com.luvoong.api.security.authentication.TokenProvider
 import com.luvoong.api.security.dto.TokenDto
 import com.luvoong.api.security.repository.MemberTokenRepository
+import com.luvoong.api.security.userdetails.CustomUserDetailsService
 import com.luvoong.api.security.userdetails.UserInfo
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -21,8 +24,11 @@ import java.util.*
 class AuthService(
     private val authenticationProvider: CustomAuthenticationProvider,
     private val memberRepository: MemberRepository,
+    private val memberRoleRepository: MemberRoleRepository,
     private val memberTokenRepository: MemberTokenRepository,
-    private val tokenProvider: TokenProvider
+    private val tokenProvider: TokenProvider,
+    private val passwordEncoder: PasswordEncoder,
+    private val userDetailsService: CustomUserDetailsService
 ) {
 
     companion object {
@@ -52,6 +58,17 @@ class AuthService(
         val user = authentication.principal as UserInfo
 
         return TokenDto(tokenProvider.createToken(user), generateRefreshToken(username, user.key))
+    }
+
+    @Transactional
+    fun authenticateForOAuth(username: String): TokenDto {
+        val user = userDetailsService.loadUserByUsername(username) as UserInfo
+
+        val authentication = UsernamePasswordAuthenticationToken(user, null, user.authorities)
+
+        setAuthentication(authentication)
+
+        return TokenDto(tokenProvider.createToken(user), generateRefreshToken(user.username, user.key))
     }
 
     @Transactional
