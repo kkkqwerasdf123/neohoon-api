@@ -20,10 +20,10 @@ class AuthController(
     @PostMapping("/api/v1/authenticate")
     fun authenticate(loginRequest: LoginRequest, response: HttpServletResponse): ResponseEntity<Void> {
 
-        val tokenDto = authService.authenticateAndGetToken(loginRequest.username, loginRequest.password)
+        val tokenDto = authService.authenticate(loginRequest.username, loginRequest.password)
 
         val headers = HttpHeaders()
-        headers.add(AuthService.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
+        headers.set(AuthService.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
         response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(tokenDto.refreshToken).toString())
 
         return ResponseEntity(headers, HttpStatus.OK)

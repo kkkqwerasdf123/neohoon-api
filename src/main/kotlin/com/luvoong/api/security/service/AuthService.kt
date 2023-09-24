@@ -36,7 +36,7 @@ class AuthService(
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
-    fun authenticateAndGetToken(username: String, password: String): TokenDto {
+    fun authenticate(username: String, password: String): TokenDto {
 
         val authentication = authenticationProvider.authenticate(
             UsernamePasswordAuthenticationToken(
@@ -47,7 +47,7 @@ class AuthService(
             )
         )
 
-        setAuthenticationToSecurityContext(authentication)
+        setAuthentication(authentication)
 
         val user = authentication.principal as UserInfo
 
@@ -71,7 +71,7 @@ class AuthService(
                 try {
                     val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
                     memberTokenRepository.delete(it)
-                    setAuthenticationToSecurityContext(authentication)
+                    setAuthentication(authentication)
                     val freshUser = authentication.principal as UserInfo
                     TokenDto(tokenProvider.createToken(freshUser), generateRefreshToken(freshUser.username, freshUser.key))
                 } catch (e: MemberNotFoundException) {
@@ -82,12 +82,12 @@ class AuthService(
     }
 
 
-    fun setAuthenticationToSecurityContext(authentication: Authentication) {
+    fun setAuthentication(authentication: Authentication) {
         SecurityContextHolder.getContext().authentication = authentication
     }
 
-    fun setAuthenticationToSecurityContext(jwt: String) {
-        setAuthenticationToSecurityContext(tokenProvider.getAuthentication(jwt))
+    fun setAuthentication(jwt: String) {
+        setAuthentication(tokenProvider.getAuthentication(jwt))
     }
 
     fun getRefreshTokenCookie(refreshToken: String): ResponseCookie {
