@@ -76,10 +76,10 @@ server:
     enabled: true
   ssl:
     enabled: true
-    key-store: keystore.p12
-    key-store-password: 123456
+    key-store: ENC(ZXrb0jf6eXiPZPtuLL2KW/ZsUEAoRD+DwHlwe6Wx2c8=)
+    key-store-password: ENC(0mVe3J/cfje4Vf3BfRD2tIP6T6Au98gmWO/DDUwieHc=)
     key-store-type: PKCS12
-    key-alias: bns-ssl
+    enabled-protocols: TLSv1.1,TLSv1.2
 
 logging:
   level:
