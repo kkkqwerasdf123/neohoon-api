@@ -3,7 +3,6 @@ package com.luvoong.api.security.service
 import com.luvoong.api.app.domain.member.MemberToken
 import com.luvoong.api.app.exception.security.MemberNotFoundException
 import com.luvoong.api.app.repository.member.MemberRepository
-import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.authentication.CustomAuthenticationProvider
 import com.luvoong.api.security.authentication.TokenProvider
 import com.luvoong.api.security.dto.TokenDto
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -24,10 +22,8 @@ import java.util.*
 class AuthService(
     private val authenticationProvider: CustomAuthenticationProvider,
     private val memberRepository: MemberRepository,
-    private val memberRoleRepository: MemberRoleRepository,
     private val memberTokenRepository: MemberTokenRepository,
     private val tokenProvider: TokenProvider,
-    private val passwordEncoder: PasswordEncoder,
     private val userDetailsService: CustomUserDetailsService
 ) {
 

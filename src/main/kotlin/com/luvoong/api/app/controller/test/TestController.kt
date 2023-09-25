@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
-@Profile("test || local || default")
+@Profile("!prod && !dev")
 @RestController
 class TestController (
     private val memberRepository: MemberRepository,

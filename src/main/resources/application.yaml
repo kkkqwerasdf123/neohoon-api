@@ -9,8 +9,8 @@ spring:
       client:
         registration:
           kakao:
-            client-id: test
-            client-secret: test
+            client-id: empty
+            client-secret: empty
             redirect-uri: https://localhost:8080/login/oauth2/code/kakao
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
@@ -24,6 +24,23 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+server:
+  http2:
+    enabled: true
+  ssl:
+    enabled: true
+    key-store: keystore.p12
+    key-store-password: 123456
+    key-store-type: PKCS12
+    enabled-protocols: TLSv1.1,TLSv1.2
+
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    key-obtention-iterations: 1000
+    pool-size: 1
+    string-output-type: base64
+
 luvoong:
   auth:
     jwt:
@@ -34,13 +51,6 @@ luvoong:
       allowed-origins: http://localhost:5173
   front:
     target: http://localhost:5173
-
-jasypt:
-  encryptor:
-    algorithm: PBEWithMD5AndDES
-    key-obtention-iterations: 1000
-    pool-size: 1
-    string-output-type: base64
 
 ---
 spring:
@@ -71,6 +81,40 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+logging:
+  level:
+    com.luvoong.api: debug
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local-dev
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ENC(siUK0Q5HEB00uMGGRyfGiqt0HuDVuSWC/fU7MkZ1FXtCozX7KiB4GUJGBsMZn2VS)
+            client-secret: ENC(vYx6Uq4rnzetqrxV7wVBDvzRHNwedE0v4BQPOwVi4ys19ZyZdYqaojmnhMVz7MnQ)
+            redirect-uri: https://dev.neohoon.com:8080/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            client-name: Kakao
+            scope:
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
 server:
   http2:
     enabled: true
@@ -84,3 +128,14 @@ server:
 logging:
   level:
     com.luvoong.api: debug
+
+luvoong:
+  auth:
+    jwt:
+      secret: ENC(ArAUcqhLbVg0X/5P1kWQKhXublIj/7d28I5LdGfH5Cj+O4zvs54WijFOngEu96cT4xM5r+tMd5Va7/i5F8X+siAjA+rnRO2lcgyU1ohL1We0DXCSDoM7OYYOSSngWe62ONC92ksAv7vKyvmHZuAASVvneQcHQaEjrVyd3Ozf7xfVF02V3vaOpaTh/KyIJuonuuTC4l+mBzEXxT7iceLHewVghZmtRqoaOxMhb7y3zONkVX5d6vCXOg==)
+      validity-in-seconds: 5
+  server:
+    cors:
+      allowed-origins: http://dev.neohoon.com
+  front:
+    target: http://dev.neohoon.com
