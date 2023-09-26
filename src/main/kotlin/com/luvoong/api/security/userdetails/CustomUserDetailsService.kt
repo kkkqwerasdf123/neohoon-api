@@ -21,9 +21,9 @@ class CustomUserDetailsService(
 
         log.debug("loadUserByUsername / username: {}", username)
 
-        return memberRepository.findByEmailAndDeletedIsFalse(username)
-            .map { createUserInfo(it) }
-            .orElseThrow { MemberNotFoundException() }
+        return memberRepository.findByUsernameAndDeletedIsFalse(username)
+            ?.let { createUserInfo(it) }
+            ?: throw MemberNotFoundException()
     }
 
     private fun createUserInfo(member: Member): UserInfo {
@@ -34,7 +34,7 @@ class CustomUserDetailsService(
 
         return UserInfo(
             id = member.id!!,
-            email = member.email,
+            username = member.username,
             password = member.password,
             authorities = authorities
         )

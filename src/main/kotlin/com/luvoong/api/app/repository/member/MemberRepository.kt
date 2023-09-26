@@ -1,13 +1,33 @@
 package com.luvoong.api.app.repository.member
 
 import com.luvoong.api.app.domain.member.Member
+import com.luvoong.api.app.dto.MemberDto
+import com.luvoong.api.security.oauth.Provider
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import java.util.*
 
 @Repository
 interface MemberRepository: JpaRepository<Member, Long> {
 
-    fun findByEmailAndDeletedIsFalse(username: String): Optional<Member>
+    fun findByUsernameAndDeletedIsFalse(username: String): Member?
+
+    @Query("""
+        select m
+        from Member m
+            inner join m.memberOauth mo on mo.deleted = false
+        where mo.provider = :provider
+          and mo.providerId = :providerId
+    """)
+    fun findByMemberOauthInfo(@Param("provider") provider: Provider, @Param("providerId") providerId: String): Member?
+
+    @Query("""
+        select new com.luvoong.api.app.dto.MemberDto(m.name, m.email, m.birthday)
+        from Member m
+        where m.id = :id
+          and m.deleted = false
+    """)
+    fun findMemberDtoById(@Param("id") id: Long): MemberDto?
 
 }

@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -42,9 +43,7 @@ class AuthService(
 
         val authentication = authenticationProvider.authenticate(
             UsernamePasswordAuthenticationToken(
-                memberRepository.findByEmailAndDeletedIsFalse(username)
-                    .map { it.email }
-                    .orElseThrow { MemberNotFoundException() },
+                memberRepository.findByUsernameAndDeletedIsFalse(username)?.username ?: throw MemberNotFoundException(),
                 password
             )
         )
@@ -79,7 +78,7 @@ class AuthService(
     fun refreshToken(token: String, jwt: String): Optional<TokenDto> {
         val user = tokenProvider.getUserOfExpiredToken(jwt)
         return memberTokenRepository.findById(token)
-            .filter {user.username == it.username && user.key == it.key }
+            .filter {user.username == it.username && user.key == it.validationKey && tokenNotExpired(it.expireDate) }
             .map {
                 try {
                     val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
@@ -113,4 +112,7 @@ class AuthService(
             .secure(true)
             .build()
     }
+
+    fun tokenNotExpired(tokenExpireDate: LocalDateTime): Boolean =
+        LocalDateTime.now().isBefore(tokenExpireDate)
 }

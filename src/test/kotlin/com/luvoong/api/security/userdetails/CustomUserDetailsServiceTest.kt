@@ -67,7 +67,7 @@ class CustomUserDetailsServiceTest {
         //then
         val expectedUserInfo = UserInfo(
             id = member.id!!,
-            email = member.email,
+            username = member.username,
             password = member.password,
             authorities = member.roles
                 .map { SimpleGrantedAuthority("ROLE_${it.role.name}") }

@@ -9,7 +9,7 @@ import java.util.*
 class UserInfo(
 
     id: Long,
-    email: String,
+    username: String,
     password: String?,
     authorities: MutableCollection<out GrantedAuthority>,
     key: String = UUID.randomUUID().toString().substring(0..7),
@@ -19,19 +19,19 @@ class UserInfo(
 
     private val authorities: MutableCollection<out GrantedAuthority> = authorities
 
-    var id: Long = id
-    private var email: String = email
-    private var password: String = password ?: ""
-    var key: String = key
+    val id: Long = id
+    private val username: String = username
+    private val password: String? = password
+    val key: String = key
 
     private val attribute: OAuth2Attribute? = attribute
 
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> = authorities
 
-    override fun getPassword(): String = password
+    override fun getPassword(): String = password ?: ""
 
-    override fun getUsername(): String = email
+    override fun getUsername(): String = username
 
     override fun isAccountNonExpired(): Boolean = true
 
@@ -41,16 +41,16 @@ class UserInfo(
 
     override fun isEnabled(): Boolean = true
 
-    override fun toString(): String {
-        return "UserInfo(authorities=$authorities, id=$id, email='$email', key='$key')"
-    }
-
     override fun getName(): String? {
         return attribute?.providerId
     }
 
     override fun getAttributes(): MutableMap<String, Any>? {
         return attribute?.attributes
+    }
+
+    override fun toString(): String {
+        return "UserInfo(authorities=$authorities, id=$id, key='$key', attribute=$attribute)"
     }
 
 }

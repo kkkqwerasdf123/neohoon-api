@@ -14,3 +14,10 @@ class KakaoAttribute(attributes: MutableMap<String, Any>): OAuth2Attribute(attri
     override val email = (attributes["kakao_account"] as MutableMap<*, *>)["email"].toString()
 }
 
+class NaverAttribute(attributes: MutableMap<String, Any>): OAuth2Attribute(attributes) {
+    private val attributeResponse: Map<*, *> = attributes["response"] as Map<*, *>
+    override val providerId = attributeResponse["id"].toString()
+    override val provider = Provider.naver
+    override val email = attributeResponse["email"].toString()
+}
+

@@ -65,7 +65,7 @@ class TokenProvider(
 
         val principal = UserInfo(
             id = claims.get(ID_NAME, Integer::class.java).toLong(),
-            email = claims.subject,
+            username = claims.subject,
             password = null,
             authorities = authorities
         )

@@ -41,7 +41,7 @@ class TestController (
     @Transactional
     @PostMapping("/dev/v1/test/member")
     fun resetTestMember(): ResponseEntity<Void> {
-        val member = Member("DongHyeok Kim", "kkkqwerasdf123@naver.com", LocalDate.of(1991, 12, 17))
+        val member = Member("kkkqwerasdf123@naver.com", "kkkqwerasdf123@naver.com", "DongHyeok Kim", LocalDate.of(1991, 12, 17))
         member.password = passwordEncoder.encode("1234")
         memberRepository.save(
             member

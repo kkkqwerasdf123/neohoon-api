@@ -1,14 +1,16 @@
 package com.luvoong.api.security.oauth
 
 import com.luvoong.api.app.domain.member.Member
+import com.luvoong.api.app.domain.member.MemberOauth
 import com.luvoong.api.app.domain.member.MemberRole
 import com.luvoong.api.app.domain.member.Role
+import com.luvoong.api.app.repository.member.MemberOauthRepository
 import com.luvoong.api.app.repository.member.MemberRepository
 import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.oauth.attribute.KakaoAttribute
+import com.luvoong.api.security.oauth.attribute.NaverAttribute
 import com.luvoong.api.security.userdetails.UserInfo
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.core.user.OAuth2User
@@ -20,7 +22,7 @@ import java.util.*
 class CustomOauth2UserService(
     private val memberRepository: MemberRepository,
     private val memberRoleRepository: MemberRoleRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val memberOauthRepository: MemberOauthRepository,
 ): DefaultOAuth2UserService() {
 
     @Transactional
@@ -32,36 +34,36 @@ class CustomOauth2UserService(
 
         val attribute = when (provider) {
             Provider.kakao -> KakaoAttribute(user.attributes)
+            Provider.naver -> NaverAttribute(user.attributes)
         }
 
         val email = attribute.email
 
-        val member = memberRepository.findByEmailAndDeletedIsFalse(email)
-            .orElseGet {
-                val member = Member(generateNameByEmail(email), email)
+        val member = memberRepository.findByMemberOauthInfo(attribute.provider, attribute.providerId)
+            ?: let {
 
-                member.password = passwordEncoder.encode(UUID.randomUUID().toString())
 
-                val memberRole = MemberRole(member, Role.USER)
+
+                val member = Member(generateUsernameByProvider(provider), email).also { memberRepository.save(it) }
+                val memberOauth = MemberOauth(member, provider, attribute.providerId).also { memberOauthRepository.save(it) }
+                member.addOauth(memberOauth)
+
+                val memberRole = MemberRole(member, Role.USER).also { memberRoleRepository.save(it) }
                 member.roles.add(memberRole)
-                memberRepository.save(member)
-                memberRoleRepository.save(memberRole)
                 member
             }
 
 
         return UserInfo(
             id = member.id!!,
-            email = member.email,
+            username = member.username,
             password = null,
             authorities = member.roles.map { SimpleGrantedAuthority(it.role.name) }.toMutableList(),
             attribute = attribute
         )
     }
 
-    private fun generateNameByEmail(email: String): String {
-        val name = email.split("@")[0]
-        return if (name.length > 30) name.substring(0..30) else name
-    }
+    private fun generateUsernameByProvider(provider: Provider): String =
+        "${UUID.randomUUID().toString().replace("-", "")}@${provider.name}"
 
 }

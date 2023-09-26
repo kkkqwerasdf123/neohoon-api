@@ -20,11 +20,11 @@ class MemberRole(
     var id: Long? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    var member: Member = member
+    @JoinColumn(name = "member_id", nullable = false, updatable = false)
+    val member: Member = member
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    var role: Role = role
+    @Column(length = 30, nullable = false, updatable = false)
+    val role: Role = role
 
 }

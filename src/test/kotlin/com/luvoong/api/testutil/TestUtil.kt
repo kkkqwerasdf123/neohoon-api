@@ -39,11 +39,14 @@ class TestUtil {
         if (member != null) {
             return
         }
-        val member = Member("DHKIM", username, LocalDate.of(1991, 12, 17))
-        member.password = passwordEncoder.encode(password)
-        memberRepository.save(member)
-        Role.values().map { MemberRole(member, it) }.forEach { memberRoleRepository.save(it) }
-        TestUtil.member = member;
+        val member = Member(username, username, "DHKIM", LocalDate.of(1991, 12, 17))
+            .also {
+                it.password = passwordEncoder.encode(password)
+                memberRepository.save(it)
+            }
+
+        memberRoleRepository.saveAll(Role.values().map { MemberRole(member, it) })
+        TestUtil.member = member
     }
 
     fun parseCookie(cookieString: String): Cookie {
