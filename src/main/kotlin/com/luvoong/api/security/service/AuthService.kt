@@ -10,6 +10,7 @@ import com.luvoong.api.security.repository.MemberTokenRepository
 import com.luvoong.api.security.userdetails.CustomUserDetailsService
 import com.luvoong.api.security.userdetails.UserInfo
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -17,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 
 @Service
 class AuthService(
@@ -46,9 +46,7 @@ class AuthService(
                 memberRepository.findByUsernameAndDeletedIsFalse(username)?.username ?: throw MemberNotFoundException(),
                 password
             )
-        )
-
-        setAuthentication(authentication)
+        ).also { setAuthentication(it) }
 
         val user = authentication.principal as UserInfo
 
@@ -59,27 +57,28 @@ class AuthService(
     fun authenticateForOAuth(username: String): TokenDto {
         val user = userDetailsService.loadUserByUsername(username) as UserInfo
 
-        val authentication = UsernamePasswordAuthenticationToken(user, null, user.authorities)
-
-        setAuthentication(authentication)
+        UsernamePasswordAuthenticationToken(user, null, user.authorities).also {
+            setAuthentication(it)
+        }
 
         return TokenDto(tokenProvider.createToken(user), generateRefreshToken(user.username, user.key))
     }
 
     @Transactional
     fun generateRefreshToken(username: String, key: String): String {
-        val memberToken = MemberToken(username, key)
-        memberTokenRepository.save(memberToken)
+        val memberToken = MemberToken(username, key).also { memberTokenRepository.save(it) }
+
         log.debug("refreshToken generated")
+
         return memberToken.token
     }
 
     @Transactional
-    fun refreshToken(token: String, jwt: String): Optional<TokenDto> {
+    fun refreshToken(token: String, jwt: String): TokenDto? {
         val user = tokenProvider.getUserOfExpiredToken(jwt)
-        return memberTokenRepository.findById(token)
-            .filter {user.username == it.username && user.key == it.validationKey && tokenNotExpired(it.expireDate) }
-            .map {
+        return memberTokenRepository.findByIdOrNull(token)
+            ?.takeIf {user.username == it.username && user.key == it.validationKey && tokenNotExpired(it.expireDate) }
+            ?.let {
                 try {
                     val authentication = authenticationProvider.getAuthenticationByUsername(user.username)
                     memberTokenRepository.delete(it)

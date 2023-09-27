@@ -49,7 +49,7 @@ class JwtFilter(
                     log.debug("refreshToken in cookie : {}", refreshToken)
 
                     authService.refreshToken(refreshToken, accessToken)
-                        .ifPresent {
+                        ?.let {
                             response.setHeader(AuthService.AUTHORIZATION_HEADER_NAME, it.accessToken)
                             response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(it.refreshToken).toString())
 

@@ -25,10 +25,12 @@ class CustomAuthenticationEntryPoint(
         authException: AuthenticationException
     ) {
         log.debug("unauthorized : {}", request.requestURI)
-        response.contentType = MediaType.APPLICATION_JSON.toString()
-        response.characterEncoding = StandardCharsets.UTF_8.name()
-        response.status = HttpStatus.UNAUTHORIZED.value()
-        objectMapper.writeValue(response.writer, ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED))
+        with (response) {
+            contentType = MediaType.APPLICATION_JSON.toString()
+            characterEncoding = StandardCharsets.UTF_8.name()
+            status = HttpStatus.UNAUTHORIZED.value()
+            objectMapper.writeValue(writer, ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED))
+        }
     }
 
 }

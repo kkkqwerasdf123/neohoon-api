@@ -88,12 +88,8 @@ class TokenProvider(
     }
 
     fun getUserOfExpiredToken(jwt: String): UserInfo {
-        return try {
-            val claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(jwt).body
-            UserInfo(claims.get(ID_NAME, Integer::class.java).toLong(), claims.subject, null, extractAuthorityFromClaims(claims), claims.get(REFRESH_KEY_NAME, String::class.java))
-        } catch (e: ExpiredJwtException) {
-            UserInfo(e.claims.get(ID_NAME, Integer::class.java).toLong(), e.claims.subject, null, extractAuthorityFromClaims(e.claims), e.claims.get(REFRESH_KEY_NAME, String::class.java))
-        }
+        val claims = try { Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(jwt).body } catch (e: ExpiredJwtException) { e.claims }
+        return UserInfo(claims.get(ID_NAME, Integer::class.java).toLong(), claims.subject, null, extractAuthorityFromClaims(claims), claims.get(REFRESH_KEY_NAME, String::class.java))
     }
 
     fun extractAuthorityFromClaims(claims: Claims): MutableCollection<out GrantedAuthority> {

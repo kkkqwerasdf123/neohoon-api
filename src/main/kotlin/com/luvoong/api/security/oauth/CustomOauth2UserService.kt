@@ -37,14 +37,10 @@ class CustomOauth2UserService(
             Provider.naver -> NaverAttribute(user.attributes)
         }
 
-        val email = attribute.email
-
         val member = memberRepository.findByMemberOauthInfo(attribute.provider, attribute.providerId)
             ?: let {
 
-
-
-                val member = Member(generateUsernameByProvider(provider), email).also { memberRepository.save(it) }
+                val member = Member(generateUsernameByProvider(provider), attribute.email).also { memberRepository.save(it) }
                 val memberOauth = MemberOauth(member, provider, attribute.providerId).also { memberOauthRepository.save(it) }
                 member.addOauth(memberOauth)
 

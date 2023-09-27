@@ -32,12 +32,14 @@ class Oauth2SuccessHandler(
 
         log.debug("oAuth2 Login success : {}", oAuth2User)
 
-        val tokenDto = authService.authenticateForOAuth(oAuth2User.username)
+        authService.authenticateForOAuth(oAuth2User.username).also {
+            with (response) {
+                setHeader(AuthService.AUTHORIZATION_HEADER_NAME, it.accessToken)
+                setHeader("Set-Cookie", authService.getRefreshTokenCookie(it.refreshToken).toString())
+                sendRedirect(getRedirectUrl(it.accessToken))
+            }
+        }
 
-        response.setHeader(AuthService.AUTHORIZATION_HEADER_NAME, tokenDto.accessToken)
-        response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(tokenDto.refreshToken).toString())
-
-        response.sendRedirect(getRedirectUrl(tokenDto.accessToken))
     }
 
     private fun getRedirectUrl(accessToken: String): String {

@@ -31,7 +31,7 @@ class SecurityConfig(
 ) {
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
         with(http) {
             csrf { it.disable() }
             headers { it.disable() }
@@ -53,9 +53,8 @@ class SecurityConfig(
                 it.successHandler(oauth2SuccessHandler)
             }
             addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+            build()
         }
-        return http.build()
-    }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {

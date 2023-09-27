@@ -25,10 +25,12 @@ class CustomAccessDeniedHandler(
         accessDeniedException: AccessDeniedException
     ) {
         log.debug("access denied: {}", request.requestURI)
-        response.contentType = MediaType.APPLICATION_JSON.toString()
-        response.characterEncoding = StandardCharsets.UTF_8.name()
-        response.status = HttpStatus.FORBIDDEN.value()
-        objectMapper.writeValue(response.writer, ProblemDetail.forStatus(HttpStatus.FORBIDDEN))
+        with (response) {
+            contentType = MediaType.APPLICATION_JSON.toString()
+            characterEncoding = StandardCharsets.UTF_8.name()
+            status = HttpStatus.FORBIDDEN.value()
+            objectMapper.writeValue(writer, ProblemDetail.forStatus(HttpStatus.FORBIDDEN))
+        }
     }
 
 }
