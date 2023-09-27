@@ -7,9 +7,4 @@ services:
       - 'MYSQL_ROOT_PASSWORD=1234'
       - 'MYSQL_USER=luvoong'
     ports:
-      - '3306'
-
-  redis:
-    image: 'redis:latest'
-    ports:
-      - '6379'
+      - 33060:3306

@@ -7,13 +7,21 @@ spring:
     password:
   jpa:
     defer-datasource-initialization: true
+    show-sql: true
+    hibernate:
+      ddl-auto: update
 
-test:
-  redis:
-    port: 6379
+server:
+  ssl:
+    enabled: false
 
 luvoong:
   auth:
     jwt:
       secret: QkVta0k4a2M5Y3lPMzhjRHN5YUxwdW1ZeHJCaG5jY0FmVlU0bGJ6THM4eElzM285MUs4R21lNWZVSmhYTFZla0NPczRrYW9YeFphYlIyRFgyZXlJcGxnR2lURm9Bb3J5NDVVRmg0TXZ6UFkzZ3Z2SWFJYlhia2VmNm1xMnNLTzQ=
       validity-in-seconds: 1
+
+
+logging:
+  level:
+    com.luvoong.api: debug

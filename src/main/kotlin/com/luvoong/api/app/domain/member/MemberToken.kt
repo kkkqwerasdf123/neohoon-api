@@ -1,11 +1,17 @@
 package com.luvoong.api.app.domain.member
 
-import com.luvoong.api.security.service.AuthService
-import org.springframework.data.annotation.Id
-import org.springframework.data.redis.core.RedisHash
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+import java.time.LocalDateTime
 import java.util.*
 
-@RedisHash(value = "member_token", timeToLive = AuthService.REFRESH_TOKEN_TIME_TO_LIVE)
+/**
+ * 회원 refreshToken
+ * 삭제/저장 정책 검토 (redis)
+ */
+@Entity
+@Table(name = "member_token")
 class MemberToken(
 
     username: String,
@@ -16,8 +22,10 @@ class MemberToken(
     @Id
     var token: String = UUID.randomUUID().toString()
 
-    var username: String = username
+    val username: String = username
 
-    var key: String = key
+    val validationKey: String = key
+
+    val expireDate: LocalDateTime = LocalDateTime.now().plusDays(14)
 
 }

@@ -41,14 +41,14 @@ class ExceptionResolver(
 
     fun getProblemDetail(status: HttpStatus, code: String? = null, locale: Locale = Locale.getDefault()) = when (code) {
         null -> ProblemDetail.forStatus(status)
-        else -> ProblemDetail.forStatusAndDetail(status, getMessageByCode(code, locale).orElse(status.reasonPhrase))
+        else -> ProblemDetail.forStatusAndDetail(status, getMessageByCode(code, locale) ?: status.reasonPhrase)
     }
 
-    fun getMessageByCode(code: String, locale: Locale): Optional<String> {
+    fun getMessageByCode(code: String, locale: Locale): String? {
         return try {
-            Optional.of(messageSource.getMessage(code, null, locale))
+            messageSource.getMessage(code, null, locale)
         } catch (e: NoSuchMessageException) {
-            Optional.empty<String>()
+            null
         }
     }
 

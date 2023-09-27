@@ -1,11 +1,14 @@
 package com.luvoong.api.security.filter
 
+import com.luvoong.api.app.repository.member.MemberRepository
+import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.service.AuthService
 import com.luvoong.api.testutil.TestUtil
 import jakarta.servlet.http.Cookie
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -14,11 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 class JwtFilterTest {
@@ -26,25 +30,34 @@ class JwtFilterTest {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @Autowired
-    var mvc: MockMvc? = null
-
+    lateinit var mvc: MockMvc
     @Autowired
-    var restTemplate: TestRestTemplate? = null
+    lateinit var restTemplate: TestRestTemplate
+    @Autowired
+    lateinit var memberRepository: MemberRepository
+    @Autowired
+    lateinit var memberRoleRepository: MemberRoleRepository
 
     val testUtil = TestUtil()
 
     @Value("\${luvoong.auth.jwt.validity-in-seconds}")
     var tokenValidityInSeconds: Long = 0
 
-    @BeforeEach
+    @BeforeAll
     fun init() {
+
+        log.info("restTemplate: {}", restTemplate)
+
         testUtil.restTemplate = restTemplate
+        testUtil.memberRepository = memberRepository
+        testUtil.memberRoleRepository = memberRoleRepository
+        testUtil.insertTestMember()
     }
 
     @DisplayName("인증 필터 - 성공")
     @Test
     fun success() {
-        mvc!!.perform(testUtil.get("/api/v1/auth-check"))
+        mvc.perform(testUtil.get("/api/v1/auth-check"))
             .andExpect(status().isOk)
     }
 
@@ -56,7 +69,7 @@ class JwtFilterTest {
 
         waitToTokenExpired()
 
-        mvc!!.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(*response.headers["Set-Cookie"]!!.map { testUtil.parseCookie(it) }.toTypedArray()))
+        mvc.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(*response.headers["Set-Cookie"]!!.map { testUtil.parseCookie(it) }.toTypedArray()))
             .andExpect(header().exists(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().exists(AuthService.REFRESH_TOKEN_COOKIE_NAME))
 
@@ -67,7 +80,7 @@ class JwtFilterTest {
     fun fail() {
         val accessToken = "no.valid.access.token"
 
-        mvc!!.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken"))
+        mvc.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken"))
             .andExpect(status().`is`(HttpStatus.UNAUTHORIZED.value()))
             .andExpect(header().doesNotExist(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().doesNotExist(AuthService.REFRESH_TOKEN_COOKIE_NAME))
@@ -81,7 +94,7 @@ class JwtFilterTest {
 
         waitToTokenExpired()
 
-        mvc!!.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken"))
+        mvc.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken"))
             .andExpect(status().`is`(HttpStatus.UNAUTHORIZED.value()))
             .andExpect(header().doesNotExist(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().doesNotExist(AuthService.REFRESH_TOKEN_COOKIE_NAME))
@@ -95,7 +108,7 @@ class JwtFilterTest {
 
         waitToTokenExpired()
 
-        mvc!!.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(Cookie(AuthService.REFRESH_TOKEN_COOKIE_NAME, "invalidRefreshToken")))
+        mvc.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(Cookie(AuthService.REFRESH_TOKEN_COOKIE_NAME, "invalidRefreshToken")))
             .andExpect(status().`is`(HttpStatus.UNAUTHORIZED.value()))
             .andExpect(header().doesNotExist(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().doesNotExist(AuthService.REFRESH_TOKEN_COOKIE_NAME))
@@ -110,7 +123,7 @@ class JwtFilterTest {
 
         waitToTokenExpired()
 
-        mvc!!.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(*response.headers["Set-Cookie"]!!.map { testUtil.parseCookie(it) }.toTypedArray()))
+        mvc.perform(get("/api/v1/auth-check").header("Authorization", "Bearer $accessToken").cookie(*response.headers["Set-Cookie"]!!.map { testUtil.parseCookie(it) }.toTypedArray()))
             .andExpect(status().`is`(HttpStatus.UNAUTHORIZED.value()))
             .andExpect(header().doesNotExist(AuthService.AUTHORIZATION_HEADER_NAME))
             .andExpect(cookie().doesNotExist(AuthService.REFRESH_TOKEN_COOKIE_NAME))

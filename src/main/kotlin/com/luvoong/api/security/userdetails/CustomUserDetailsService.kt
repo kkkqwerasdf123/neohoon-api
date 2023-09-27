@@ -3,6 +3,7 @@ package com.luvoong.api.security.userdetails
 import com.luvoong.api.app.domain.member.Member
 import com.luvoong.api.app.exception.security.MemberNotFoundException
 import com.luvoong.api.app.repository.member.MemberRepository
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
@@ -14,15 +15,15 @@ class CustomUserDetailsService(
     private val memberRepository: MemberRepository
 ): UserDetailsService {
 
-    val log = LoggerFactory.getLogger(this::class.java)
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun loadUserByUsername(username: String): UserDetails {
 
         log.debug("loadUserByUsername / username: {}", username)
 
-        return memberRepository.findByEmailAndDeletedIsFalse(username)
-            .map { createUserInfo(it) }
-            .orElseThrow { MemberNotFoundException() }
+        return memberRepository.findByUsernameAndDeletedIsFalse(username)
+            ?.let { createUserInfo(it) }
+            ?: throw MemberNotFoundException()
     }
 
     private fun createUserInfo(member: Member): UserInfo {
@@ -33,7 +34,7 @@ class CustomUserDetailsService(
 
         return UserInfo(
             id = member.id!!,
-            email = member.email,
+            username = member.username,
             password = member.password,
             authorities = authorities
         )

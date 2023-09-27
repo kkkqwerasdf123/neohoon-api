@@ -10,10 +10,10 @@ import java.time.LocalDate
 @EntityListeners(AuditingEntityListener::class)
 class Member (
 
-    firstName: String,
-    lastName: String,
-    email: String,
-    birthday: LocalDate
+    username: String,
+    email: String?,
+    name: String? = null,
+    birthday: LocalDate? = null
 
 ) : BaseEntity() {
 
@@ -22,22 +22,28 @@ class Member (
     @Column(name = "member_id", nullable = false, updatable = false)
     var id: Long? = null
 
-    @Column(name = "email", nullable = false, updatable = false, unique = true, length = 320)
-    var email: String = email
+    @Column(name = "username", nullable = false, updatable = false, unique = true, length = 320)
+    val username: String = username
 
-    @Column(nullable = false, length = 30)
-    var firstName: String = firstName
+    @Column(name = "email", length = 320)
+    var email: String? = email
 
-    @Column(nullable = false, length = 30)
-    var lastName: String = lastName
+    @Column(length = 30)
+    var name: String? = name
 
     var password: String? = null
 
-    @Column(nullable = false)
-    var birthday: LocalDate = birthday
+    var birthday: LocalDate? = birthday
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")
     var roles: MutableCollection<MemberRole> = mutableListOf()
+
+    @OneToMany(fetch = FetchType.LAZY)
+    var memberOauth: MutableList<MemberOauth> = mutableListOf()
+
+    fun addOauth(memberOauth: MemberOauth) {
+        this.memberOauth.add(memberOauth)
+    }
 
 }

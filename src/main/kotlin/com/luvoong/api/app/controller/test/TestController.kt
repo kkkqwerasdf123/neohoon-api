@@ -9,26 +9,28 @@ import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.app.service.TestService
 import com.luvoong.api.security.userdetails.UserInfo
 import jakarta.servlet.http.HttpServletRequest
+import org.jasypt.encryption.StringEncryptor
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
-@Profile("test || local || default")
+@Profile("!prod && !dev")
 @RestController
 class TestController (
     private val memberRepository: MemberRepository,
     private val memberRoleRepository: MemberRoleRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val testService: TestService
+    private val testService: TestService,
+
+    @Qualifier(value = "jasyptStringEncryptor")
+    val encryptor: StringEncryptor
 ) {
 
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -39,7 +41,7 @@ class TestController (
     @Transactional
     @PostMapping("/dev/v1/test/member")
     fun resetTestMember(): ResponseEntity<Void> {
-        val member = Member("DongHyeok", "Kim", "kkkqwerasdf123@naver.com", LocalDate.of(1991, 12, 17))
+        val member = Member("kkkqwerasdf123@naver.com", "kkkqwerasdf123@naver.com", "DongHyeok Kim", LocalDate.of(1991, 12, 17))
         member.password = passwordEncoder.encode("1234")
         memberRepository.save(
             member
@@ -68,6 +70,11 @@ class TestController (
         if (1 == 1) {
             throw LuvoongBaseException(HttpStatus.BAD_GATEWAY, "test.name")
         }
+    }
+
+    @GetMapping("/dev/v1/test/encrypt")
+    fun encrypt(@RequestParam("text") text: String): ResponseEntity<String> {
+        return ResponseEntity.ok(encryptor.encrypt(text))
     }
 
 }

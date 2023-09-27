@@ -1,19 +1,53 @@
 package com.luvoong.api.testutil
 
+import com.luvoong.api.app.domain.member.Member
+import com.luvoong.api.app.domain.member.MemberRole
+import com.luvoong.api.app.domain.member.Role
+import com.luvoong.api.app.repository.member.MemberRepository
+import com.luvoong.api.app.repository.member.MemberRoleRepository
 import com.luvoong.api.security.service.AuthService
 import jakarta.servlet.http.Cookie
+import org.slf4j.LoggerFactory
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpMethod
+import org.springframework.http.RequestEntity
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import java.time.LocalDate
 
 class TestUtil {
 
-    private val username = "kkkqwerasdf123@naver.com"
-    private val password = "1234"
+    companion object {
 
-    var restTemplate: TestRestTemplate? = null
+        var member: Member? = null
+
+    }
+
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    val username = "kkkqwerasdf123@naver.com"
+    val password = "1234"
+
+    var passwordEncoder = BCryptPasswordEncoder()
+    lateinit var restTemplate: TestRestTemplate
+    lateinit var memberRepository: MemberRepository
+    lateinit var memberRoleRepository: MemberRoleRepository
+
+    fun insertTestMember() {
+        if (member != null) {
+            return
+        }
+        val member = Member(username, username, "DHKIM", LocalDate.of(1991, 12, 17))
+            .also {
+                it.password = passwordEncoder.encode(password)
+                memberRepository.save(it)
+            }
+
+        memberRoleRepository.saveAll(Role.values().map { MemberRole(member, it) })
+        TestUtil.member = member
+    }
 
     fun parseCookie(cookieString: String): Cookie {
         val rawCookieParams = cookieString.split(";")
@@ -40,11 +74,11 @@ class TestUtil {
     }
 
     fun getAuthResponse(): ResponseEntity<Void> {
-        return restTemplate!!.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, null, Void::class.java, username, password)
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password)
     }
 
     fun getAccessToken(): String {
-        return restTemplate!!.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, null, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
+        return restTemplate.exchange("/api/v1/authenticate?username={0}&password={1}", HttpMethod.POST, RequestEntity.EMPTY, Void::class.java, username, password).headers[AuthService.AUTHORIZATION_HEADER_NAME]!![0]
     }
 
     fun get(url: String): MockHttpServletRequestBuilder {

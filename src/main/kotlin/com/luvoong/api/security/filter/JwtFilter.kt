@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
@@ -19,28 +20,38 @@ class JwtFilter(
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
+    private val ignoreUriPatterns = listOf("/api/v1/authenticate").map { AntPathRequestMatcher.antMatcher(it) }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
 
-        val accessToken = getAccessTokenOfRequestHeader(request)
+        if (isIgnoreRequest(request)) {
+
+            log.debug("request ignored JWT filter")
+
+            filterChain.doFilter(request, response)
+            return
+        }
+
+        val accessToken = obtainAccessToken(request)
 
         if (StringUtils.hasText(accessToken)) {
             when (tokenProvider.accessTokenValidState(accessToken)) {
 
-                VALID -> authService.setAuthenticationToSecurityContext(accessToken)
+                VALID -> authService.setAuthentication(accessToken)
 
                 EXPIRED -> {
-                    val refreshToken = getRefreshTokenOfRequestCookie(request)
+                    val refreshToken = obtainRefreshToken(request)
 
                     log.debug("refreshToken in cookie : {}", refreshToken)
 
                     authService.refreshToken(refreshToken, accessToken)
-                        .ifPresent {
+                        ?.let {
                             response.setHeader(AuthService.AUTHORIZATION_HEADER_NAME, it.accessToken)
-                            response.addCookie(authService.getRefreshTokenCookie(it.refreshToken))
+                            response.setHeader("Set-Cookie", authService.getRefreshTokenCookie(it.refreshToken).toString())
 
                             log.debug("token refreshed")
                         }
@@ -53,7 +64,7 @@ class JwtFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun getAccessTokenOfRequestHeader(request: HttpServletRequest): String {
+    private fun obtainAccessToken(request: HttpServletRequest): String {
 
         val bearerToken = request.getHeader(AuthService.AUTHORIZATION_HEADER_NAME)
 
@@ -63,12 +74,16 @@ class JwtFilter(
         return ""
     }
 
-    private fun getRefreshTokenOfRequestCookie(request: HttpServletRequest): String {
+    private fun obtainRefreshToken(request: HttpServletRequest): String {
         return (request.cookies ?: arrayOf())
             .filter { it.name == AuthService.REFRESH_TOKEN_COOKIE_NAME }
             .map { it.value }
             .firstOrNull()
             ?: ""
+    }
+
+    private fun isIgnoreRequest(request: HttpServletRequest): Boolean {
+        return ignoreUriPatterns.any { it.matches(request) }
     }
 
 }
