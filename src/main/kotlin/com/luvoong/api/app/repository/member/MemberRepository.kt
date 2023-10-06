@@ -23,7 +23,7 @@ interface MemberRepository: JpaRepository<Member, Long> {
     fun findByMemberOauthInfo(@Param("provider") provider: Provider, @Param("providerId") providerId: String): Member?
 
     @Query("""
-        select new com.luvoong.api.app.dto.MemberDto(m.name, m.email, m.birthday)
+        select new com.luvoong.api.app.dto.MemberDto(m)
         from Member m
         where m.id = :id
           and m.deleted = false
