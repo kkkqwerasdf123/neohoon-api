@@ -6,6 +6,12 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.8.22'
+
+    //restdocs-api-spec → restdocs extension  포함함
+    id 'com.epages.restdocs-api-spec' version "0.19.0"
+
+    //swagger generator 플러그인 추가
+    id 'org.hidetake.swagger.generator' version '2.19.2'
 }
 
 group = 'com.luvoong'
@@ -45,6 +51,15 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.github.ulisesbocchio/jasypt-spring-boot-starter
     implementation group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '3.0.5'
+
+    //spring rest docs
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    //restdocs-api-spec 의존성 추가
+    testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.19.0'
+
+    // Swagger ui - https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 }
 
 tasks.withType(KotlinCompile) {
@@ -62,4 +77,29 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.Embeddable")
     annotation("jakarta.persistence.MappedSuperclass")
+}
+
+
+
+openapi3 {
+    server = "https://localhost:8080"
+    title = "TEST API DOCUMENT"
+    description = "Spring REST Docs with SwaggerUI."
+    version = "0.0.1"
+    outputFileNamePrefix = 'luvoong-api'
+    format = 'json'
+    outputDirectory = 'build/resources/main/static/docs'
+
+    contact = {
+        name = "DongHyeok Kim"
+        email = "kkkqwerasdf123@naver.com"
+    }
+}
+
+tasks.withType(GenerateSwaggerUI) {
+    dependsOn 'openapi3'
+}
+
+bootJar{
+    dependsOn(':openapi3')
 }

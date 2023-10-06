@@ -4,6 +4,7 @@ spring:
   web:
     resources:
       add-mappings: false
+      static-locations: classpath:static/
   security:
     oauth2:
       client:
@@ -55,6 +56,11 @@ luvoong:
       allowed-origins: http://localhost:5173, http://127.0.0.1:5173
   front:
     target: http://localhost:5173
+
+springdoc:
+  swagger-ui:
+    url: /docs/luvoong-api.json
+    path: /docs/swagger
 
 ---
 spring:

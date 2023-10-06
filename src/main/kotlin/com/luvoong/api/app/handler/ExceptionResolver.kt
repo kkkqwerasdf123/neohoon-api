@@ -13,6 +13,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.NoHandlerFoundException
 import java.util.*
 
 @RestControllerAdvice
@@ -35,7 +36,7 @@ class ExceptionResolver(
         locale: Locale
     ) = ex.body.also { log.debug("errorResponseException resolved : {}", ex.javaClass) }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException::class, MethodArgumentNotValidException::class)
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class, MethodArgumentNotValidException::class, NoHandlerFoundException::class)
     fun resolveRequestException(
         ex: ErrorResponse,
         locale: Locale
