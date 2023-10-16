@@ -37,7 +37,8 @@ class SecurityConfig(
             headers { it.disable() }
             cors { it.configurationSource(corsConfigurationSource()) }
             authorizeHttpRequests {
-                it.requestMatchers(*antMatchers("/docs/swagger-ui/**")).permitAll()
+                it.requestMatchers(*antMatchers("/docs/**")).permitAll()
+                it.requestMatchers(*antMatchers("/v3/**")).permitAll()
 
                 it.requestMatchers(*antMatchers("/login/oauth2/code/**")).permitAll()
                 it.requestMatchers(*antMatchers("/oauth2/authorization/**")).permitAll()

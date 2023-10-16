@@ -37,9 +37,9 @@ class Member (
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")
-    var roles: MutableCollection<MemberRole> = mutableListOf()
+    var roles: MutableList<MemberRole> = mutableListOf()
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")
     var memberOauth: MutableList<MemberOauth> = mutableListOf()
 
     fun addOauth(memberOauth: MemberOauth) {

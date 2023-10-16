@@ -43,11 +43,12 @@ class TestController (
     fun resetTestMember(): ResponseEntity<Void> {
         val member = Member("kkkqwerasdf123@naver.com", "kkkqwerasdf123@naver.com", "DongHyeok Kim", LocalDate.of(1991, 12, 17))
         member.password = passwordEncoder.encode("1234")
+        member.roles.add(MemberRole(member, Role.USER))
+        member.roles.add(MemberRole(member, Role.MASTER))
         memberRepository.save(
             member
         )
-        memberRoleRepository.save(MemberRole(member, Role.USER))
-        memberRoleRepository.save(MemberRole(member, Role.MASTER))
+        memberRoleRepository.saveAll(member.roles)
         return ResponseEntity(HttpStatus.ACCEPTED)
     }
 
