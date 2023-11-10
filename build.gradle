@@ -14,7 +14,7 @@ plugins {
     id 'org.hidetake.swagger.generator' version '2.19.2'
 }
 
-group = 'com.luvoong'
+group = 'com.neohoon'
 version = '0.0.1'
 
 java {
@@ -86,7 +86,7 @@ openapi3 {
     title = "TEST API DOCUMENT"
     description = "Spring REST Docs with SwaggerUI."
     version = "0.0.1"
-    outputFileNamePrefix = 'luvoong-api'
+    outputFileNamePrefix = 'neohoon-api'
     format = 'json'
     outputDirectory = 'build/resources/main/static/docs'
 

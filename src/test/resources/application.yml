@@ -2,7 +2,7 @@ spring:
   profiles:
     active: test
   datasource:
-    url: jdbc:h2:mem:luvoongtest01
+    url: jdbc:h2:mem:neohoontest01
     username: sa
     password:
   jpa:
@@ -15,7 +15,7 @@ server:
   ssl:
     enabled: false
 
-luvoong:
+neohoon:
   auth:
     jwt:
       secret: QkVta0k4a2M5Y3lPMzhjRHN5YUxwdW1ZeHJCaG5jY0FmVlU0bGJ6THM4eElzM285MUs4R21lNWZVSmhYTFZla0NPczRrYW9YeFphYlIyRFgyZXlJcGxnR2lURm9Bb3J5NDVVRmg0TXZ6UFkzZ3Z2SWFJYlhia2VmNm1xMnNLTzQ=
@@ -24,4 +24,4 @@ luvoong:
 
 logging:
   level:
-    com.luvoong.api: debug
+    com.neohoon.api: debug

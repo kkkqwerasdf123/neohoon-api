@@ -46,7 +46,7 @@ jasypt:
     pool-size: 1
     string-output-type: base64
 
-luvoong:
+neohoon:
   auth:
     jwt:
       secret: ENC(ArAUcqhLbVg0X/5P1kWQKhXublIj/7d28I5LdGfH5Cj+O4zvs54WijFOngEu96cT4xM5r+tMd5Va7/i5F8X+siAjA+rnRO2lcgyU1ohL1We0DXCSDoM7OYYOSSngWe62ONC92ksAv7vKyvmHZuAASVvneQcHQaEjrVyd3Ozf7xfVF02V3vaOpaTh/KyIJuonuuTC4l+mBzEXxT7iceLHewVghZmtRqoaOxMhb7y3zONkVX5d6vCXOg==)
@@ -59,7 +59,7 @@ luvoong:
 
 springdoc:
   swagger-ui:
-    url: /docs/luvoong-api.json
+    url: /docs/neohoon-api.json
     path: /docs/swagger
 
 ---
@@ -107,7 +107,7 @@ spring:
 
 logging:
   level:
-    com.luvoong.api: debug
+    com.neohoon.api: debug
 
 ---
 
@@ -151,9 +151,9 @@ server:
 
 logging:
   level:
-    com.luvoong.api: debug
+    com.neohoon.api: debug
 
-luvoong:
+neohoon:
   auth:
     jwt:
       secret: ENC(ArAUcqhLbVg0X/5P1kWQKhXublIj/7d28I5LdGfH5Cj+O4zvs54WijFOngEu96cT4xM5r+tMd5Va7/i5F8X+siAjA+rnRO2lcgyU1ohL1We0DXCSDoM7OYYOSSngWe62ONC92ksAv7vKyvmHZuAASVvneQcHQaEjrVyd3Ozf7xfVF02V3vaOpaTh/KyIJuonuuTC4l+mBzEXxT7iceLHewVghZmtRqoaOxMhb7y3zONkVX5d6vCXOg==)
